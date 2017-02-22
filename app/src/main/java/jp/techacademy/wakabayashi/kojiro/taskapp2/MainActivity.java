@@ -6,16 +6,21 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 //import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -69,9 +74,38 @@ public class MainActivity extends AppCompatActivity{
 
 
     @Override
+    public void onBackPressed() {
+        // your code.
+        Log.d("戻る","BACK");
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        ActionBar bar = this.getSupportActionBar();
+
+// タイトルを設定
+        toolbar.setTitle("タイトル");
+        toolbar.setTitleTextColor(Color.WHITE);
+
+// ナビゲーションアイコンの設定、クリック処理
+
+        toolbar.findViewById(R.id.toolbar).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("タグ","Clicked");
+
+                top();
+
+            }
+        });
+
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -93,10 +127,44 @@ public class MainActivity extends AppCompatActivity{
         // searcTextの設定
         mSearchText = (EditText) findViewById(R.id.search_edit_text);
         mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                // TODO Auto-generated method stub
-                //Log.d("onEditorAction", "actionId = " + actionId + " event = " + (event == null ? "null" : event));
+
+/*
+                boolean handled = false;
+                if(actionId == EditorInfo.IME_ACTION_DONE) {
+                    keyword = mSearchText.getText().toString();
+                    Log.d("後", keyword);
+
+                    search();
+
+                    handled = true;
+                    keyword = "";
+
+
+                    if(event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                        if(event.getAction() == KeyEvent.ACTION_UP) {
+                            Log.d("onEditorAction", "check");
+                            // ソフトキーボードを隠す
+                            ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(), 0);
+                            Toast.makeText(getApplicationContext(), "editText1", Toast.LENGTH_SHORT).show();
+                        }
+                        return true;
+                    }
+                }
+
+               // return handled;
+
+
+
+
+                //Log.d("Search後","onCreate");
+                return handled;
+            }
+
+
+*/
 
                 keyword = mSearchText.getText().toString();
                 Log.d("後",keyword);
@@ -114,6 +182,9 @@ public class MainActivity extends AppCompatActivity{
                 }
                 return false;
             }
+
+
+
         });
 
         //EditTextにリスナーをセット
@@ -212,12 +283,29 @@ public class MainActivity extends AppCompatActivity{
         reloadListView();
     }
 
+
+    private  void top(){
+
+
+        mRealm = Realm.getDefaultInstance();
+        mTaskRealmResults = mRealm.where(Task.class).findAll();
+        mTaskRealmResults.sort("date", Sort.DESCENDING);
+        mRealm.addChangeListener(mRealmListener);
+        reloadListView();
+
+
+    }
     private void search(){
 
+        Log.d("検索0","検索");
+        Log.d("検索ワード",keyword);
         mRealm = Realm.getDefaultInstance();
         mTaskRealmResults = mRealm.where(Task.class).equalTo("category", keyword).findAll();
         mTaskRealmResults.sort("date", Sort.DESCENDING);
         mRealm.addChangeListener(mRealmListener);
+
+       // mSearchText = (EditText) findViewById(R.id.search_edit_text);
+
 
 
         // ListViewの設定
@@ -225,12 +313,21 @@ public class MainActivity extends AppCompatActivity{
        // mListView = (ListView) findViewById(R.id.listView1);
 
         reloadListView();
+        Log.d("検索１","検索");
+
 
     }
 
-    
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("Android", "onStart");
+    }
+
     private void reloadListView() {
 
+
+        Log.d("リロード","リロード");
         ArrayList<Task> taskArrayList = new ArrayList<>();
 
         // 後でTaskクラスに変更する
@@ -250,6 +347,8 @@ public class MainActivity extends AppCompatActivity{
             task.setTitle(mTaskRealmResults.get(i).getTitle());
             task.setContents(mTaskRealmResults.get(i).getContents());
             task.setCategory(mTaskRealmResults.get(i).getCategory());
+           // task.setCategory_Id(mTaskRealmResults.get(i).getCategory_Id());
+            task.setCategory_Id(0);
             task.setDate(mTaskRealmResults.get(i).getDate());
 
             taskArrayList.add(task);
@@ -258,7 +357,11 @@ public class MainActivity extends AppCompatActivity{
         mTaskAdapter.setTaskArrayList(taskArrayList);
         mListView.setAdapter(mTaskAdapter);
         mTaskAdapter.notifyDataSetChanged();
+
+
+
     }
+
 
     @Override
     protected void onDestroy() {
@@ -272,6 +375,7 @@ public class MainActivity extends AppCompatActivity{
         task.setTitle("作業");
         task.setContents("プログラムを書いてPUSHする");
         task.setCategory("");
+        task.setCategory_Id(0);
         task.setDate(new Date());
         task.setId(0);
         mRealm.beginTransaction();

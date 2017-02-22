@@ -1,0 +1,7 @@
+<resources>
+    <string-array name="spnEntries">
+        <item>アイテム 1</item>
+        <item>アイテム 2</item>
+        <item>アイテム 3</item>
+    </string-array>
+</resources>

@@ -1,5 +1,13 @@
 package jp.techacademy.wakabayashi.kojiro.taskapp2;
 
+
+/*
+Spinnerの参考サイト
+http://androidguide.nomaki.jp/html/widget/spinner/spinnerMain.html
+
+ */
+
+
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
@@ -8,18 +16,31 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import io.realm.Realm;
+import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
+import io.realm.Sort;
+
+
 
 public class InputActivity extends AppCompatActivity {
 
@@ -28,6 +49,23 @@ public class InputActivity extends AppCompatActivity {
     private Button mDateButton, mTimeButton;
     private EditText mTitleEdit, mContentEdit, mCategoryEdit;
     private Task mTask;
+    private static final int REQUEST_CODE = 1;
+    public int category_id;
+
+    public String category_name;
+
+    private Realm mCategoryRealm; //Realmクラスを保持するmCategoryRealmを定義します。
+    private RealmResults<Category> mCategoryRealmResults; //RealmResultsクラスのmCategoryRealmResultsはデータベースから取得した結果を保持する変数です。
+    private RealmChangeListener mCategoryRealmListener = new RealmChangeListener() {
+        @Override
+        public void onChange(Object element) {
+
+            //reloadCategory();
+            Log.d("Categoryが","変わった");
+        }
+    };
+
+
 
     //Dateをクリック
     private View.OnClickListener mOnDateClickListener = new View.OnClickListener() {
@@ -85,6 +123,51 @@ public class InputActivity extends AppCompatActivity {
     ここでは既に渡し終わっていると仮定して（後ほど渡すほうも学びます）、受け取る方から実装していきます。
      */
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // 設定ボタン押下処理
+                Intent intent = new Intent(InputActivity.this, CategoryActivity.class);
+
+                startActivityForResult(intent, REQUEST_CODE);
+
+                Log.d("新しいページへ","カテゴリ追加ページ");
+                break;
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            //SecondActivityから戻ってきた場合
+            case (REQUEST_CODE):
+                if (resultCode == RESULT_OK) {
+                    Log.d("もどってきた","もどってきた");
+                    reloadCategory();
+
+                } else if (resultCode == RESULT_CANCELED) {
+                    //キャンセルボタンを押して戻ってきたときの処理
+                } else {
+                    //その他
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +190,78 @@ public class InputActivity extends AppCompatActivity {
         mContentEdit = (EditText)findViewById(R.id.content_edit_text);
         mCategoryEdit = (EditText)findViewById(R.id.category_edit_text);
 
+        Spinner spinner = (Spinner)findViewById(R.id.spinner);
+
+
+
+        mCategoryRealm = Realm.getDefaultInstance();
+        mCategoryRealmResults = mCategoryRealm.where(Category.class).findAll();
+        mCategoryRealmResults.sort("id", Sort.DESCENDING);
+
+
+        mCategoryRealm.addChangeListener(mCategoryRealmListener);
+
+
+
+        /* Spiner 実験中　*/
+        // Spinnerオブジェクトを取得
+/*
+        Spinner spinner = (Spinner)findViewById(R.id.spinner);
+
+        /*
+        ArrayList<Category> categoryArrayList = new ArrayList<>();
+
+        for (int i = 0; i < mCategoryRealmResults.size(); i++){
+            if (!mCategoryRealmResults.get(i).isValid()) continue;
+
+            Category category = new Category();
+
+            category.setId(mCategoryRealmResults.get(i).getId());
+            category.setName(mCategoryRealmResults.get(i).getName());
+
+            categoryArrayList.add(category);
+        }
+
+        String[] array = (String[])categoryArrayList.toArray(new String[0]);
+
+        // Adapterの作成
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, array);
+
+
+
+        spinnerAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinnerAdapter);
+
+*/
+        /**スピナーに追加するアイテム*/
+/*
+        String[] items = {
+                "Mouse",
+                "Cow",
+                "tiger",
+                "Rabbit",
+                "Dragon"
+        };
+
+        ArrayAdapter<String> spinnerAdapter
+                = new ArrayAdapter<String>(
+                this, android.R.layout.simple_spinner_item, items);
+        spinnerAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinnerAdapter);
+        ///アダプターを設定
+
+
+        // 選択されているアイテムのIndexを取得
+        int idx = spinner.getSelectedItemPosition();
+
+        // 選択されているアイテムを取得
+        String item = (String)spinner.getSelectedItem();
+        Log.d("Spiner",item);*/
+        /* Spiner 実験中　*/
+
+
         /*
         // EXTRA_TASK から Task の id を取得して、 id から Task のインスタンスを取得する.
         //このとき、もし EXTRA_TASK が設定されていないと taskId は -1 が代入されます。
@@ -123,6 +278,7 @@ public class InputActivity extends AppCompatActivity {
         */
         Intent intent = getIntent();
         int taskId = intent.getIntExtra(MainActivity.EXTRA_TASK, -1);
+
         Realm realm = Realm.getDefaultInstance();
         mTask = realm.where(Task.class).equalTo("id", taskId).findFirst();
         realm.close();
@@ -154,9 +310,95 @@ public class InputActivity extends AppCompatActivity {
             mDateButton.setText(dateString);
             mTimeButton.setText(timeString);
         }
+
+        if (mCategoryRealmResults.size() == 0) {
+            // アプリ起動時にタスクの数が0であった場合は表示テスト用のタスクを作成する
+            addCategoryForTest();
+        }
+        reloadCategory();
+    }
+
+    private void addCategoryForTest() {
+        Category category = new Category();
+        category.setName("Android");
+        category.setId(0);
+        mCategoryRealm.beginTransaction();
+        mCategoryRealm.copyToRealmOrUpdate(category);
+        mCategoryRealm.commitTransaction();
+
+    }
+
+
+    private void reloadCategory(){
+
+        Spinner spinner = (Spinner)findViewById(R.id.spinner);
+        Log.d("カテゴリリロード","リロード");
+
+        ArrayList<Category> categoryArrayList = new ArrayList<>();
+
+        for (int i = 0; i < mCategoryRealmResults.size(); i++){
+            if (!mCategoryRealmResults.get(i).isValid()) continue;
+
+            Category category = new Category();
+
+            //category.setId(mCategoryRealmResults.get(i).getId());
+            category.setName(mCategoryRealmResults.get(i).getName());
+
+            categoryArrayList.add(category);
+
+        }
+
+
+        String[] array = new String[categoryArrayList.size()];
+        for (int i = 0; i < categoryArrayList.size(); i++) {
+            array[i] = String.valueOf(categoryArrayList.get(i));
+            Log.d("i",array[i]);
+        }
+
+
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, array);
+
+
+
+        spinnerAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinnerAdapter);
+
+
+        // スピナーのアイテムが選択された時に呼び出されるコールバックリスナーを登録します
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int position, long id) {
+                Spinner spinner = (Spinner) parent;
+                // 選択されたアイテムを取得します
+                String item = (String) spinner.getSelectedItem();
+                Log.d("category_name", item);
+                category_name = item;
+
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
+
+
+/*
+        // 選択されているアイテムのIndexを取得
+        category_id = spinner.getSelectedItemPosition();
+        Log.d("category_id", String.valueOf(category_id));
+
+        // 選択されているアイテムを取得
+        String item = (String)spinner.getSelectedItem();
+        category_name = item;
+
+*/
+
     }
 
     private void addTask() {
+
+        Log.d("AddTaskcategory_name",category_name);
         Realm realm = Realm.getDefaultInstance();
 
         realm.beginTransaction();
@@ -185,11 +427,14 @@ public class InputActivity extends AppCompatActivity {
 
         String title = mTitleEdit.getText().toString();
         String content = mContentEdit.getText().toString();
-        String category = mCategoryEdit.getText().toString();
+        //String category = mCategoryEdit.getText().toString();
+        String category = category_name;
 
         mTask.setTitle(title);
         mTask.setContents(content);
+        Log.d("AddTaskcategory_name2",category);
         mTask.setCategory(category);
+        mTask.setCategory_Id(category_id);
         GregorianCalendar calendar = new GregorianCalendar(mYear,mMonth,mDay,mHour,mMinute);
         Date date = calendar.getTime();
         mTask.setDate(date);

@@ -8,9 +8,20 @@
     android:fitsSystemWindows="true"
     tools:context="jp.techacademy.wakabayashi.kojiro.taskapp2.MainActivity">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
     <EditText
+        android:paddingTop="10dp"
         android:id="@+id/search_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,12 +29,14 @@
         android:inputType="text"
         android:hint="カテゴリ検索" />
 
+
     <ListView
-        android:paddingTop="60dp"
+        android:paddingTop="10dp"
         android:id="@+id/listView1"
-        android:layout_below="@id/search_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+    </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

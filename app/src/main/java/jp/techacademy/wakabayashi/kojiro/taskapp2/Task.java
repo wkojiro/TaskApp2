@@ -16,6 +16,7 @@ public class Task extends RealmObject implements Serializable {
     private String title;
     private String contents;
     private String category;
+    private Integer category_id;
     private Date date;
 
 //シリアライズとはデータを丸ごとファイルに保存したり、TaskAppでいうと別のActivityに渡すことができるようにすることです。
@@ -51,6 +52,14 @@ public class Task extends RealmObject implements Serializable {
         this.category = category;
     }
 
+
+    public int getCategory_Id() {
+        return category_id;
+    }
+
+    public void setCategory_Id(int category_id) {
+        this.category_id = category_id;
+    }
 
     public Date getDate() {
         return date;
